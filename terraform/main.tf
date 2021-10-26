@@ -1075,7 +1075,7 @@ resource "aws_subnet" "ServerSubnetAZ1" {
   vpc_id = aws_vpc.ServerVPC.id
   cidr_block = var.ServerSubnetAZ1
   availability_zone = local.awsAz1
-  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 1)}"
+  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 10)}"
   assign_ipv6_address_on_creation = true
   tags = {
     Name = "${var.projectPrefix}-ServerSubnetAZ1-${random_id.buildSuffix.hex}"
@@ -1086,7 +1086,7 @@ resource "aws_subnet" "ServerSubnetIngressAZ1" {
   vpc_id = aws_vpc.ServerVPC.id
   cidr_block = var.ServerSubnetIngressAZ1
   availability_zone = local.awsAz1
-  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 2)}"
+  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 11)}"
   assign_ipv6_address_on_creation = true
   tags = {
     Name = "${var.projectPrefix}-ServerSubnetIngressAZ1-${random_id.buildSuffix.hex}"
@@ -1094,9 +1094,9 @@ resource "aws_subnet" "ServerSubnetIngressAZ1" {
 }
 resource "aws_subnet" "ServerSubnetEgressAZ1" {
   vpc_id = aws_vpc.ServerVPC.id
-  cidr_block = var.ServerSubnetIngressAZ1
+  cidr_block = var.ServerSubnetEgressAZ1
   availability_zone = local.awsAz1
-  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 3)}"
+  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 12)}"
   assign_ipv6_address_on_creation = true
   tags = {
     Name = "${var.projectPrefix}-ServerSubnetEgressAZ1-${random_id.buildSuffix.hex}"
@@ -1106,7 +1106,7 @@ resource "aws_subnet" "ServerSubnetAZ2" {
   vpc_id = aws_vpc.ServerVPC.id
   cidr_block = var.ServerSubnetAZ2
   availability_zone = local.awsAz2
-  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 4)}"
+  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 20)}"
   assign_ipv6_address_on_creation = true
   tags = {
     Name = "${var.projectPrefix}-ServerSubnetAZ2-${random_id.buildSuffix.hex}"
@@ -1116,7 +1116,7 @@ resource "aws_subnet" "ServerSubnetIngressAZ2" {
   vpc_id = aws_vpc.ServerVPC.id
   cidr_block = var.ServerSubnetIngressAZ2
   availability_zone = local.awsAz2
-  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 5)}"
+  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 21)}"
   assign_ipv6_address_on_creation = true
   tags = {
     Name = "${var.projectPrefix}-ServerSubnetIngressAZ2-${random_id.buildSuffix.hex}"
@@ -1126,7 +1126,7 @@ resource "aws_subnet" "ServerSubnetEgressAZ2" {
   vpc_id = aws_vpc.ServerVPC.id
   cidr_block = var.ServerSubnetEgressAZ2
   availability_zone = local.awsAz2
-  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 6)}"
+  ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 22)}"
   assign_ipv6_address_on_creation = true
   tags = {
     Name = "${var.projectPrefix}-ServerSubnetEgressAZ2-${random_id.buildSuffix.hex}"
@@ -1315,7 +1315,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "clientTGWVPCAttachment" {
 resource "aws_ec2_transit_gateway_vpc_attachment" "serverTGWVPCAttachment" {
   vpc_id = aws_vpc.ServerVPC.id
   transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
-  subnet_ids = [aws_subnet.ServerSubnetAZ1.id,aws_subnet.ServerSubnetAZ2.id]
+  subnet_ids = [aws_subnet.ServerSubnetIngressAZ1.id,aws_subnet.ServerSubnetIngressAZ2.id]
   transit_gateway_default_route_table_association = "true"
   transit_gateway_default_route_table_propagation = "true"
   ipv6_support = "enable"

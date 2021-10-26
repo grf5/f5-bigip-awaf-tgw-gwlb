@@ -147,18 +147,6 @@ extension_services:
             remoteHost: ${cm_peer_ip}
             remoteUsername: admin
             remotePassword: ${bigipAdminPassword}
-          failoverGroup:
-            class: DeviceGroup
-            type: sync-failover
-            members:
-              - ${cm_primary_hostname}
-              - ${cm_secondary_hostname}
-            owner: /Common/failoverGroup/members/0
-            autoSync: true
-            saveOnAutoSync: false
-            networkFailover: true
-            fullLoadOnSync: false
-            asmSync: true
     - extensionType: as3
       type: inline
       value:
@@ -215,39 +203,6 @@ extension_services:
                         layer4: any
                         profileL4: basic
                         snat: none
-    - extensionType: cf
-      type: inline
-      value:
-        class: Cloud_Failover
-        environment: aws
-        controls:
-          class: Controls
-          logLevel: silly
-        externalStorage:
-          scopingName: '${s3_bucket}'
-        failoverAddresses:
-          enabled: false
-          scopingTags:
-            f5_cloud_failover_label: '${f5_cloud_failover_label}'
-        failoverRoutes:
-          enabled: true
-          scopingTags:
-            f5_cloud_failover_label: '${f5_cloud_failover_label}'
-          scopingAddressRanges:
-            - range: '${client_subnet_cidr_ipv4}'
-            - range: '${server_subnet_cidr_ipv4}'
-          defaultNextHopAddresses:
-            discoveryType: static
-            items:
-              - '${primary_data_ip}'
-              - '${secondary_data_ip}'
-post_onboard_enabled:
-  - name: trigger_failover
-    type: inline
-    commands:
-    - $(nohup bash /config/failover/tgactive &>/dev/null &)
-    - $(nohup tmsh modify cm device-group failoverGroup devices modify { ${cm_secondary_hostname} { set-sync-leader } } &>/dev/null &)
-    - tmsh save sys config
 EOF
 
 # Add licensing if necessary
