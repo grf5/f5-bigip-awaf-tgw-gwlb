@@ -3,11 +3,6 @@
 ##
 provider "aws" {
   region = var.awsRegion
-  default_tags {
-    tags = {
-      Owner = "${var.resourceOwner}"
-    }
-  }
 }
 data "aws_availability_zones" "available" {
   state = "available"
@@ -88,9 +83,9 @@ data "aws_ami" "F5BIG-IP_AMI" {
   owners = ["679593333241"]
 }
 
-##########################
-## F5 BIG-IP HA Cluster ##
-##########################
+################
+## F5 BIG-IPs ##
+################
 
 ##
 ## VPC
@@ -100,13 +95,16 @@ resource "aws_vpc" "SecuritySvcsVPC" {
   cidr_block = var.SecuritySvcsCIDR
   assign_generated_ipv6_cidr_block = "true"
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsVPC-${random_id.buildSuffix.hex}"
+    Owner = "${var.resourceOwner}"
   }
 }
 
 resource "aws_default_security_group" "SecuritySvcsSG" {
   vpc_id = aws_vpc.SecuritySvcsVPC.id
-  tags = {
+    tags = {
+      Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsSG-${random_id.buildSuffix.hex}"
   }
   ingress {
@@ -171,7 +169,8 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ1-MGMT" {
   availability_zone = local.awsAz1
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.SecuritySvcsVPC.ipv6_cidr_block, 8, 1)}"
   assign_ipv6_address_on_creation = true
-  tags = {
+    tags = {
+      Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ1-MGMT-${random_id.buildSuffix.hex}"
   }
 }
@@ -182,7 +181,8 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ1-DATA" {
   availability_zone = local.awsAz1
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.SecuritySvcsVPC.ipv6_cidr_block, 8, 3)}"
   assign_ipv6_address_on_creation = true
-  tags = {
+    tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ1-DATA-${random_id.buildSuffix.hex}"
   }
 }
@@ -194,6 +194,7 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ1-DATA-ingress" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.SecuritySvcsVPC.ipv6_cidr_block, 8, 5)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ1-DATA-ingress--${random_id.buildSuffix.hex}"
   }
 }
@@ -205,6 +206,7 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ2-MGMT" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.SecuritySvcsVPC.ipv6_cidr_block, 8, 2)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ2-MGMT-${random_id.buildSuffix.hex}"
   }
 }
@@ -216,6 +218,7 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ2-DATA" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.SecuritySvcsVPC.ipv6_cidr_block, 8, 4)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ2-DATA-${random_id.buildSuffix.hex}"
   }
 }
@@ -227,6 +230,7 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ2-DATA-ingress" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.SecuritySvcsVPC.ipv6_cidr_block, 8, 6)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsSubnetAZ2-DATA-ingress-${random_id.buildSuffix.hex}"
   }
 }
@@ -234,6 +238,7 @@ resource "aws_subnet" "SecuritySvcsSubnetAZ2-DATA-ingress" {
 resource "aws_internet_gateway" "SecuritySvcsIGW" {
   vpc_id = aws_vpc.SecuritySvcsVPC.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsIGW-${random_id.buildSuffix.hex}"
   }
 }
@@ -249,6 +254,7 @@ resource "aws_route_table" "SecuritySvcsMgmtRT" {
       gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
     }
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsMgmtRT-${random_id.buildSuffix.hex}"
   }
 }
@@ -275,39 +281,39 @@ resource "aws_default_route_table" "SecuritySvcsMainRT" {
   }
   route {
     cidr_block = aws_subnet.ClientSubnetAZ1.cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ClientSubnetAZ1.ipv6_cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
   }
   route {
     cidr_block = aws_subnet.ClientSubnetAZ2.cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ClientSubnetAZ2.ipv6_cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
   }
   route {
     cidr_block = aws_subnet.ServerSubnetAZ1.cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ServerSubnetAZ1.ipv6_cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
   }
   route {
     cidr_block = aws_subnet.ServerSubnetAZ2.cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
   }
   route {
     ipv6_cidr_block = aws_subnet.ServerSubnetAZ2.ipv6_cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
   }
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsMainRT-${random_id.buildSuffix.hex}"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -358,6 +364,7 @@ resource "aws_route_table" "SecuritySvcsTGWRT" {
     transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
   }
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsTGWRT-${random_id.buildSuffix.hex}"
   }
 }
@@ -376,12 +383,12 @@ resource "aws_route_table_association" "SecuritySvcsTGWRTAssociationAZ2" {
 ## BIG-IP AMI/Onboarding Config
 ##
 
-data "template_file" "bigip_runtime_init_PRI_AZ1" {
+data "template_file" "bigip_runtime_init_AZ1" {
   template = "${file("${path.module}/bigip_runtime_init_user_data.tpl")}"
   vars = {
     bigipAdminPassword = "${var.bigipAdminPassword}"
     bigipLicenseType = "${var.bigipLicenseType == "BYOL" ? "BYOL" : "PAYG"}"
-    bigipLicense = "${var.bigipLicensePRI_AZ1}"
+    bigipLicense = "${var.bigipLicenseAZ1}"
     f5_do_version = "${var.f5_do_version}"
     f5_do_schema_version = "${var.f5_do_schema_version}"
     f5_as3_version = "${var.f5_as3_version}"
@@ -389,28 +396,19 @@ data "template_file" "bigip_runtime_init_PRI_AZ1" {
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
     f5_cf_version = "${var.f5_cf_version}"
-    service_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
-    monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
-    cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
+    service_address = "${aws_network_interface.F5_BIGIP_AZ1ENI_DATA.private_ip}"
+    monitoring_address = "${aws_network_interface.F5_BIGIP_AZ1ENI_DATA.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
-    cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
-    cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
-    cm_peer_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
-    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
-    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
-    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ1.cidr_block}"
-    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ1.cidr_block}"
-    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
   }
 }
 
-data "template_file" "bigip_runtime_init_SEC_AZ1" {
+
+data "template_file" "bigip_runtime_init_AZ2" {
   template = "${file("${path.module}/bigip_runtime_init_user_data.tpl")}"
   vars = {
     bigipAdminPassword = "${var.bigipAdminPassword}"
     bigipLicenseType = "${var.bigipLicenseType == "BYOL" ? "BYOL" : "PAYG"}"
-    bigipLicense = "${var.bigipLicenseSEC_AZ1}"
+    bigipLicense = "${var.bigipLicenseAZ2}"
     f5_do_version = "${var.f5_do_version}"
     f5_do_schema_version = "${var.f5_do_schema_version}"
     f5_as3_version = "${var.f5_as3_version}"
@@ -418,364 +416,241 @@ data "template_file" "bigip_runtime_init_SEC_AZ1" {
     f5_ts_version = "${var.f5_ts_version}"
     f5_ts_schema_version = "${var.f5_ts_schema_version}"
     f5_cf_version = "${var.f5_cf_version}"
-    service_address = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
-    monitoring_address = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
-    cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip}"
-    cm_self_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
-    cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ1.${var.labDomain}"
-    cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ1.${var.labDomain}"
-    cm_peer_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
-    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip}"
-    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip}"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
-    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ1.cidr_block}"
-    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ1.cidr_block}"
-    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
-  }
-}
-
-data "template_file" "bigip_runtime_init_PRI_AZ2" {
-  template = "${file("${path.module}/bigip_runtime_init_user_data.tpl")}"
-  vars = {
-    bigipAdminPassword = "${var.bigipAdminPassword}"
-    bigipLicenseType = "${var.bigipLicenseType == "BYOL" ? "BYOL" : "PAYG"}"
-    bigipLicense = "${var.bigipLicensePRI_AZ2}"
-    f5_do_version = "${var.f5_do_version}"
-    f5_do_schema_version = "${var.f5_do_schema_version}"
-    f5_as3_version = "${var.f5_as3_version}"
-    f5_as3_schema_version = "${var.f5_as3_schema_version}"
-    f5_ts_version = "${var.f5_ts_version}"
-    f5_ts_schema_version = "${var.f5_ts_schema_version}"
-    f5_cf_version = "${var.f5_cf_version}"
-    service_address = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"    
-    monitoring_address = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
-    cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"
+    service_address = "${aws_network_interface.F5_BIGIP_AZ2ENI_DATA.private_ip}"    
+    monitoring_address = "${aws_network_interface.F5_BIGIP_AZ2ENI_DATA.private_ip}"
     cm_self_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
-    cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
-    cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
-    cm_peer_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
-    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
-    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
-    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ2.cidr_block}"
-    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ2.cidr_block}"
-    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
   }
 }
 
-data "template_file" "bigip_runtime_init_SEC_AZ2" {
-  template = "${file("${path.module}/bigip_runtime_init_user_data.tpl")}"
-  vars = {
-    bigipAdminPassword = "${var.bigipAdminPassword}"
-    bigipLicenseType = "${var.bigipLicenseType == "BYOL" ? "BYOL" : "PAYG"}"
-    bigipLicense = "${var.bigipLicenseSEC_AZ2}"
-    f5_do_version = "${var.f5_do_version}"
-    f5_do_schema_version = "${var.f5_do_schema_version}"
-    f5_as3_version = "${var.f5_as3_version}"
-    f5_as3_schema_version = "${var.f5_as3_schema_version}"
-    f5_ts_version = "${var.f5_ts_version}"
-    f5_ts_schema_version = "${var.f5_ts_schema_version}"
-    f5_cf_version = "${var.f5_cf_version}"
-    service_address = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"    
-    monitoring_address = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
-    cm_failover_group_owner = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip}"
-    cm_self_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
-    cm_primary_hostname = "${var.projectPrefix}-bigip-PRI-AZ2.${var.labDomain}"
-    cm_secondary_hostname = "${var.projectPrefix}-bigip-SEC-AZ2.${var.labDomain}"
-    cm_peer_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
-    primary_data_ip = "${aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip}"
-    secondary_data_ip = "${aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip}"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
-    client_subnet_cidr_ipv4 = "${aws_subnet.ClientSubnetAZ2.cidr_block}"
-    server_subnet_cidr_ipv4 = "${aws_subnet.ServerSubnetAZ2.cidr_block}"
-    s3_bucket = "f5-cloud-failover-${random_id.buildSuffix.hex}"
-  }
-}
 
 ##
 ## AZ1 F5 BIG-IP Primary
 ##
 
-resource "aws_network_interface" "F5_BIGIP_PRI_AZ1ENI_DATA" {
+resource "aws_network_interface" "F5_BIGIP_AZ1ENI_DATA" {
   source_dest_check = false
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
   tags = {
-    Name = "F5_BIGIP_PRI_AZ1ENI_DATA"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
-    f5_cloud_failover_nic_map = "data"
+    Owner = "${var.resourceOwner}"
+    Name = "F5_BIGIP_AZ1ENI_DATA"
   }
 }
 
-resource "aws_network_interface" "F5_BIGIP_PRI_AZ1ENI_MGMT" {
+resource "aws_network_interface" "F5_BIGIP_AZ1ENI_MGMT" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-MGMT.id
   # Disable IPV6 dual stack management because it breaks DO clustering
   ipv6_address_count = 0
   tags = {
-    Name = "F5_BIGIP_PRI_AZ1ENI_MGMT"
+    Owner = "${var.resourceOwner}"
+    Name = "F5_BIGIP_AZ1ENI_MGMT"
   }
 }
 
-resource "aws_eip" "F5_BIGIP_PRI_AZ1EIP_MGMT" {
+resource "aws_eip" "F5_BIGIP_AZ1EIP_MGMT" {
   vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.private_ip
+  network_interface = aws_network_interface.F5_BIGIP_AZ1ENI_MGMT.id
+  associate_with_private_ip = aws_network_interface.F5_BIGIP_AZ1ENI_MGMT.private_ip
   # The IGW needs to exist before the EIP can be created
   depends_on = [
     aws_internet_gateway.SecuritySvcsIGW
   ]
   tags = {
-    Name = "F5_BIGIP_PRI_AZ1EIP_MGMT"
+    Owner = "${var.resourceOwner}"
+    Name = "F5_BIGIP_AZ1EIP_MGMT"
   }
 }
 
-resource "aws_eip" "F5_BIGIP_PRI_AZ1EIP_DATA" {
+resource "aws_eip" "F5_BIGIP_AZ1EIP_DATA" {
   vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.private_ip
+  network_interface = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
+  associate_with_private_ip = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.private_ip
   # The IGW needs to exist before the EIP can be created
   depends_on = [
     aws_internet_gateway.SecuritySvcsIGW
   ]
   tags = {
-    Name = "F5_BIGIP_PRI_AZ1EIP_DATA"
+    Owner = "${var.resourceOwner}"
+    Name = "F5_BIGIP_AZ1EIP_DATA"
   }
 }
-resource "aws_instance" "F5_BIGIP_PRI_AZ1" {
+resource "aws_instance" "F5_BIGIP_AZ1" {
   ami = data.aws_ami.F5BIG-IP_AMI.id
   instance_type = "${var.bigip_ec2_instance_type}"
   availability_zone = local.awsAz1
   key_name = aws_key_pair.deployer.id
-	user_data = "${data.template_file.bigip_runtime_init_PRI_AZ1.rendered}"
+	user_data = "${data.template_file.bigip_runtime_init_AZ1.rendered}"
   network_interface {
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_MGMT.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_MGMT.id
     device_index = 0
   }
   network_interface {
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ1ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
     device_index = 1
   }
   # Let's ensure an EIP is provisioned so licensing and bigip-runtime-init runs successfully
   depends_on = [
-    aws_eip.F5_BIGIP_PRI_AZ1EIP_MGMT
+    aws_eip.F5_BIGIP_AZ1EIP_MGMT
   ]
   tags = {
-    Name = "${var.projectPrefix}-F5_BIGIP_PRI_AZ1-${random_id.buildSuffix.hex}"
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-F5_BIGIP_AZ1-${random_id.buildSuffix.hex}"
   }
 }
+
 
 ##
-## AZ1 F5 BIG-IP Secondary
+## AZ2 F5 BIG-IP
 ##
 
-resource "aws_network_interface" "F5_BIGIP_SEC_AZ1ENI_DATA" {
-  source_dest_check = false
-  subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
-  tags = {
-    Name = "F5_BIGIP_SEC_AZ1ENI_DATA"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
-    f5_cloud_failover_nic_map = "data"
-  }
-}
-
-resource "aws_network_interface" "F5_BIGIP_SEC_AZ1ENI_MGMT" {
-  subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-MGMT.id
-  # Disable IPV6 dual stack management because it breaks DO clustering
-  ipv6_address_count = 0
-  tags = {
-    Name = "F5_BIGIP_SEC_AZ1ENI_MGMT"
-  }
-}
-
-resource "aws_eip" "F5_BIGIP_SEC_AZ1EIP_MGMT" {
-  vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_MGMT.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_MGMT.private_ip
-  # The IGW needs to exist before the EIP can be created
-  depends_on = [
-    aws_internet_gateway.SecuritySvcsIGW
-  ]
-  tags = {
-    Name = "F5_BIGIP_SEC_AZ1EIP_MGMT"
-  }
-}
-
-resource "aws_eip" "F5_BIGIP_SEC_AZ1EIP_DATA" {
-  vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.private_ip
-  # The IGW needs to exist before the EIP can be created
-  depends_on = [
-    aws_internet_gateway.SecuritySvcsIGW
-  ]
-  tags = {
-    Name = "F5_BIGIP_SEC_AZ1EIP_DATA"
-  }
-}
-
-resource "aws_instance" "F5_BIGIP_SEC_AZ1" {
-  ami = data.aws_ami.F5BIG-IP_AMI.id
-  instance_type = "${var.bigip_ec2_instance_type}"
-  availability_zone = local.awsAz1
-  key_name = aws_key_pair.deployer.id
-	user_data = "${data.template_file.bigip_runtime_init_SEC_AZ1.rendered}"
-  network_interface {
-    network_interface_id = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_MGMT.id
-    device_index = 0
-  }
-  network_interface {
-    network_interface_id = aws_network_interface.F5_BIGIP_SEC_AZ1ENI_DATA.id
-    device_index = 1
-  }
-  # Let's ensure an EIP is provisioned so licensing and bigip-runtime-init runs successfully
-  depends_on = [
-    aws_eip.F5_BIGIP_SEC_AZ1EIP_MGMT
-  ]
-  tags = {
-    Name = "${var.projectPrefix}-F5_BIGIP_SEC_AZ1-${random_id.buildSuffix.hex}"
-  }
-}
-
-##
-## AZ2 F5 BIG-IP Primary
-##
-
-resource "aws_network_interface" "F5_BIGIP_PRI_AZ2ENI_DATA" {
+resource "aws_network_interface" "F5_BIGIP_AZ2ENI_DATA" {
   source_dest_check = false
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
   tags = {
-    Name = "F5_BIGIP_PRI_AZ2ENI_DATA"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
-    f5_cloud_failover_nic_map = "data"
+    Owner = "${var.resourceOwner}"
+    Name = "F5_BIGIP_AZ2ENI_DATA"
   }
 }
 
-resource "aws_network_interface" "F5_BIGIP_PRI_AZ2ENI_MGMT" {
+resource "aws_network_interface" "F5_BIGIP_AZ2ENI_MGMT" {
   subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-MGMT.id
   # Disable IPV6 dual stack management because it breaks DO clustering
   ipv6_address_count = 0
   tags = {
-    Name = "F5_BIGIP_PRI_AZ2ENI_MGMT"
+    Owner = "${var.resourceOwner}"
+    Name = "F5_BIGIP_AZ2ENI_MGMT"
   }
 }
 
-resource "aws_eip" "F5_BIGIP_PRI_AZ2EIP_MGMT" {
+resource "aws_eip" "F5_BIGIP_AZ2EIP_MGMT" {
   vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.private_ip
+  network_interface = aws_network_interface.F5_BIGIP_AZ2ENI_MGMT.id
+  associate_with_private_ip = aws_network_interface.F5_BIGIP_AZ2ENI_MGMT.private_ip
   # The IGW needs to exist before the EIP can be created
   depends_on = [
     aws_internet_gateway.SecuritySvcsIGW
   ]
   tags = {
-    Name = "F5_BIGIP_PRI_AZ2EIP_MGMT"
+    Owner = "${var.resourceOwner}"
+    Name = "F5_BIGIP_AZ2EIP_MGMT"
   }
 }
 
-resource "aws_eip" "F5_BIGIP_PRI_AZ2EIP_DATA" {
+resource "aws_eip" "F5_BIGIP_AZ2EIP_DATA" {
   vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.private_ip
+  network_interface = aws_network_interface.F5_BIGIP_AZ2ENI_DATA.id
+  associate_with_private_ip = aws_network_interface.F5_BIGIP_AZ2ENI_DATA.private_ip
   # The IGW needs to exist before the EIP can be created
   depends_on = [
     aws_internet_gateway.SecuritySvcsIGW
   ]
   tags = {
-    Name = "F5_BIGIP_PRI_AZ2EIP_DATA"
+    Owner = "${var.resourceOwner}"
+    Name = "F5_BIGIP_AZ2EIP_DATA"
   }
 }
 
-resource "aws_instance" "F5_BIGIP_PRI_AZ2" {
+resource "aws_instance" "F5_BIGIP_AZ2" {
   ami = data.aws_ami.F5BIG-IP_AMI.id
   instance_type = "${var.bigip_ec2_instance_type}"
   availability_zone = local.awsAz2
   key_name = aws_key_pair.deployer.id
-	user_data = "${data.template_file.bigip_runtime_init_PRI_AZ2.rendered}"
+	user_data = "${data.template_file.bigip_runtime_init_AZ2.rendered}"
   network_interface {
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_MGMT.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ2ENI_MGMT.id
     device_index = 0
   }
   network_interface {
-    network_interface_id = aws_network_interface.F5_BIGIP_PRI_AZ2ENI_DATA.id
+    network_interface_id = aws_network_interface.F5_BIGIP_AZ2ENI_DATA.id
     device_index = 1
   }
   # Let's ensure an EIP is provisioned so licensing and bigip-runtime-init runs successfully
   depends_on = [
-    aws_eip.F5_BIGIP_PRI_AZ2EIP_MGMT
+    aws_eip.F5_BIGIP_AZ2EIP_MGMT
   ]
   tags = {
-    Name = "${var.projectPrefix}-F5_BIGIP_PRI_AZ2-${random_id.buildSuffix.hex}"
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-F5_BIGIP_AZ2-${random_id.buildSuffix.hex}"
   }
 }
 
-##
-## AZ2 F5 BIG-IP Secondary
-##
-
-resource "aws_network_interface" "F5_BIGIP_SEC_AZ2ENI_DATA" {
-  source_dest_check = false
-  subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
+resource "aws_lb" "BIGIP_GWLB" {
+  name = "${var.projectPrefix}-BIGIP-GWLB-${random_id.buildSuffix.hex}"
+  load_balancer_type = "gateway"
+  enable_cross_zone_load_balancing = true
+  subnet_mapping {
+    subnet_id = aws_subnet.SecuritySvcsSubnetAZ1-DATA.id
+  }
+  subnet_mapping {
+    subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-DATA.id
+  }
   tags = {
-    Name = "F5_BIGIP_SEC_AZ2ENI_DATA"
-    f5_cloud_failover_label = "f5_cloud_failover-${random_id.buildSuffix.hex}"
-    f5_cloud_failover_nic_map = "data"    
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-BIGIP_GWLB-${random_id.buildSuffix.hex}"
   }
 }
 
-resource "aws_network_interface" "F5_BIGIP_SEC_AZ2ENI_MGMT" {
-  subnet_id = aws_subnet.SecuritySvcsSubnetAZ2-MGMT.id
-  # Disable IPV6 dual stack management because it breaks DO clustering
-  ipv6_address_count = 0
-  tags = {
-    Name = "F5_BIGIP_SEC_AZ2ENI_MGMT"
+resource "aws_lb_target_group" "BIGIP_GWLB_TG" {
+  name = "${var.projectPrefix}-BIGIP-GWLB-TG-${random_id.buildSuffix.hex}"
+  vpc_id = aws_vpc.SecuritySvcsVPC.id
+  port = 6081
+  protocol = "GENEVE"
+  health_check {
+    port = 65530
+    protocol = "HTTP"
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    timeout = 2
+    interval = 5
   }
 }
 
-resource "aws_eip" "F5_BIGIP_SEC_AZ2EIP_MGMT" {
-  vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_MGMT.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_MGMT.private_ip
-  # The IGW needs to exist before the EIP can be created
-  depends_on = [
-    aws_internet_gateway.SecuritySvcsIGW
-  ]
-  tags = {
-    Name = "F5_BIGIP_SEC_AZ2EIP_MGMT"
+resource "aws_lb_listener" "BIGIP_GWLB_Listener" {
+  load_balancer_arn = aws_lb.BIGIP_GWLB.arn
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.BIGIP_GWLB_TG.arn
   }
 }
 
-resource "aws_eip" "F5_BIGIP_SEC_AZ2EIP_DATA" {
-  vpc = true
-  network_interface = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.id
-  associate_with_private_ip = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.private_ip
-  # The IGW needs to exist before the EIP can be created
-  depends_on = [
-    aws_internet_gateway.SecuritySvcsIGW
-  ]
+resource "aws_lb_target_group_attachment" "BIGIPGWLBTGAttachmentAZ1" {
+  target_group_arn = aws_lb_target_group.BIGIP_GWLB_TG.arn
+  target_id = aws_instance.F5_BIGIP_AZ1.id
+}
+
+resource "aws_lb_target_group_attachment" "BIGIPGWLBTGAttachmentAZ2" {
+  target_group_arn = aws_lb_target_group.BIGIP_GWLB_TG.arn
+  target_id = aws_instance.F5_BIGIP_AZ2.id
+}
+
+resource "aws_vpc_endpoint_service" "BIGIP_GWLB_VPC_Endpoint_Service" {
+  acceptance_required = false
+  allowed_principals = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+  gateway_load_balancer_arns = [ aws_lb.BIGIP_GWLB.arn ]
   tags = {
-    Name = "F5_BIGIP_SEC_AZ2EIP_DATA"
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-BIGIP_GWLB_VPC_ES-${random_id.buildSuffix.hex}"
   }
 }
 
-resource "aws_instance" "F5_BIGIP_SEC_AZ2" {
-  ami = data.aws_ami.F5BIG-IP_AMI.id
-  instance_type = "${var.bigip_ec2_instance_type}"
-  availability_zone = local.awsAz2
-  key_name = aws_key_pair.deployer.id
-	user_data = "${data.template_file.bigip_runtime_init_SEC_AZ2.rendered}"
-  network_interface {
-    network_interface_id = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_MGMT.id
-    device_index = 0
-  }
-  network_interface {
-    network_interface_id = aws_network_interface.F5_BIGIP_SEC_AZ2ENI_DATA.id
-    device_index = 1
-  }
-  # Let's ensure an EIP is provisioned so licensing and bigip-runtime-init runs successfully
-  depends_on = [
-    aws_eip.F5_BIGIP_SEC_AZ2EIP_MGMT
-  ]
+resource "aws_vpc_endpoint" "BIGIPGWLBServerEndpointAZ1" {
+  service_name = aws_vpc_endpoint_service.BIGIP_GWLB_VPC_Endpoint_Service.service_name
+  vpc_id = aws_vpc.ServerVPC.id
+  vpc_endpoint_type = aws_vpc_endpoint_service.BIGIP_GWLB_VPC_Endpoint_Service.service_type
+  subnet_ids = [ aws_subnet.ServerSubnetAZ1.id ]
   tags = {
-    Name = "${var.projectPrefix}-F5_BIGIP_SEC_AZ2-${random_id.buildSuffix.hex}"
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-BIGIPGWLBServerEndpoint-${random_id.buildSuffix.hex}"
+  }
+}
+
+resource "aws_vpc_endpoint" "BIGIPGWLBServerEndpointAZ2" {
+  service_name = aws_vpc_endpoint_service.BIGIP_GWLB_VPC_Endpoint_Service.service_name
+  vpc_id = aws_vpc.ServerVPC.id
+  vpc_endpoint_type = aws_vpc_endpoint_service.BIGIP_GWLB_VPC_Endpoint_Service.service_type
+  subnet_ids = [ aws_subnet.ServerSubnetAZ2.id ]
+  tags = {
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-BIGIPGWLBServerEndpoint-${random_id.buildSuffix.hex}"
   }
 }
 
@@ -791,6 +666,7 @@ resource "aws_vpc" "ClientVPC" {
   cidr_block = var.ClientSubnetCIDR
   assign_generated_ipv6_cidr_block = "true"  
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ClientVPC-${random_id.buildSuffix.hex}"
   }
 }
@@ -798,6 +674,7 @@ resource "aws_vpc" "ClientVPC" {
 resource "aws_default_security_group" "ClientSG" {
   vpc_id = aws_vpc.ClientVPC.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ClientSG-${random_id.buildSuffix.hex}"
   }
   ingress {
@@ -839,6 +716,7 @@ resource "aws_subnet" "ClientSubnetAZ1" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.ClientVPC.ipv6_cidr_block, 8, 1)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ClientSubnetAZ1-${random_id.buildSuffix.hex}"
   }
 }
@@ -850,6 +728,7 @@ resource "aws_subnet" "ClientSubnetAZ2" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.ClientVPC.ipv6_cidr_block, 8, 2)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ClientSubnetAZ2-${random_id.buildSuffix.hex}"
   }
 }
@@ -857,6 +736,7 @@ resource "aws_subnet" "ClientSubnetAZ2" {
 resource "aws_internet_gateway" "ClientIGW" {
   vpc_id = aws_vpc.ClientVPC.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ClientIGW-${random_id.buildSuffix.hex}"
   }
 }
@@ -888,6 +768,7 @@ resource "aws_default_route_table" "ClientMainRT" {
     transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
   }
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ClientMainRT-${random_id.buildSuffix.hex}"
   }
 }
@@ -899,6 +780,7 @@ resource "aws_default_route_table" "ClientMainRT" {
 resource "aws_network_interface" "ClientAZ1ENI" {
   subnet_id = aws_subnet.ClientSubnetAZ1.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "ClientAZ1ENI"
   }
 }
@@ -912,6 +794,7 @@ resource "aws_eip" "ClientAZ1EIP" {
     aws_internet_gateway.ClientIGW
   ]
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "ClientAZ1EIP"
   }
 }
@@ -945,6 +828,7 @@ resource "aws_instance" "ClientAZ1" {
     aws_eip.ClientAZ1EIP
   ]
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ClientAZ1-${random_id.buildSuffix.hex}"
   }
 }
@@ -956,6 +840,7 @@ resource "aws_instance" "ClientAZ1" {
 resource "aws_network_interface" "ClientAZ2ENI" {
   subnet_id = aws_subnet.ClientSubnetAZ2.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "ClientAZ2ENI"
   }
 }
@@ -969,6 +854,7 @@ resource "aws_eip" "ClientAZ2EIP" {
     aws_internet_gateway.ClientIGW
   ]
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "ClientAZ2EIP"
   }
 }
@@ -1002,6 +888,7 @@ resource "aws_instance" "ClientAZ2" {
     aws_eip.ClientAZ2EIP
   ]
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ClientAZ2-${random_id.buildSuffix.hex}"
   }
 }
@@ -1018,6 +905,7 @@ resource "aws_vpc" "ServerVPC" {
   cidr_block = var.ServerSubnetCIDR
   assign_generated_ipv6_cidr_block = "true"
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerVPC-${random_id.buildSuffix.hex}"
   }
 }
@@ -1025,6 +913,7 @@ resource "aws_vpc" "ServerVPC" {
 resource "aws_default_security_group" "ServerSG" {
   vpc_id = aws_vpc.ServerVPC.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerSG-${random_id.buildSuffix.hex}"
   }
   ingress {
@@ -1078,6 +967,7 @@ resource "aws_subnet" "ServerSubnetAZ1" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 10)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerSubnetAZ1-${random_id.buildSuffix.hex}"
   }
 }
@@ -1089,6 +979,7 @@ resource "aws_subnet" "ServerSubnetIngressAZ1" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 11)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerSubnetIngressAZ1-${random_id.buildSuffix.hex}"
   }
 }
@@ -1099,6 +990,7 @@ resource "aws_subnet" "ServerSubnetEgressAZ1" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 12)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerSubnetEgressAZ1-${random_id.buildSuffix.hex}"
   }
 }
@@ -1109,6 +1001,7 @@ resource "aws_subnet" "ServerSubnetAZ2" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 20)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerSubnetAZ2-${random_id.buildSuffix.hex}"
   }
 }
@@ -1119,6 +1012,7 @@ resource "aws_subnet" "ServerSubnetIngressAZ2" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 21)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerSubnetIngressAZ2-${random_id.buildSuffix.hex}"
   }
 }
@@ -1129,6 +1023,7 @@ resource "aws_subnet" "ServerSubnetEgressAZ2" {
   ipv6_cidr_block = "${cidrsubnet(aws_vpc.ServerVPC.ipv6_cidr_block, 8, 22)}"
   assign_ipv6_address_on_creation = true
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerSubnetEgressAZ2-${random_id.buildSuffix.hex}"
   }
 }
@@ -1136,6 +1031,7 @@ resource "aws_subnet" "ServerSubnetEgressAZ2" {
 resource "aws_internet_gateway" "ServerIGW" {
   vpc_id = aws_vpc.ServerVPC.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerIGW-${random_id.buildSuffix.hex}"
   }
 }
@@ -1167,8 +1063,51 @@ resource "aws_default_route_table" "ServerMainRT" {
     transit_gateway_id = aws_ec2_transit_gateway.awsTransitGateway.id
   }
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerMainRT-${random_id.buildSuffix.hex}"
   }
+}
+
+resource "aws_route_table" "ServerIngressGWLBeAZ1" {
+  vpc_id = aws_vpc.ServerVPC.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ1.id
+  }
+  route {
+    ipv6_cidr_block = "::/0"
+    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ1.id
+  }
+  tags = {
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-ServerIngressGWLBeAZ1-${random_id.buildSuffix.hex}"
+  }  
+}
+
+resource "aws_route_table_association" "ServerIngressGWLBeAZ1" {
+  subnet_id = aws_subnet.ServerSubnetIngressAZ1.id
+  route_table_id = aws_route_table.ServerIngressGWLBeAZ1.id
+}
+
+resource "aws_route_table" "ServerIngressGWLBeAZ2" {
+  vpc_id = aws_vpc.ServerVPC.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ2.id
+  }
+  route {
+    ipv6_cidr_block = "::/0"
+    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ2.id
+  }
+  tags = {
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-ServerIngressGWLBeAZ2-${random_id.buildSuffix.hex}"
+  }  
+}
+
+resource "aws_route_table_association" "ServerIngressGWLBeAZ2" {
+  subnet_id = aws_subnet.ServerSubnetIngressAZ1.id
+  route_table_id = aws_route_table.ServerIngressGWLBeAZ1.id
 }
 
 ##
@@ -1178,6 +1117,7 @@ resource "aws_default_route_table" "ServerMainRT" {
 resource "aws_network_interface" "ServerAZ1ENI" {
   subnet_id = aws_subnet.ServerSubnetAZ1.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "ServerAZ1ENI"
   }
 }
@@ -1191,6 +1131,7 @@ resource "aws_eip" "ServerAZ1EIP" {
     aws_internet_gateway.ServerIGW
   ]
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "ServerAZ1EIP"
   }
 }
@@ -1224,6 +1165,7 @@ resource "aws_instance" "ServerAZ1" {
     aws_eip.ServerAZ1EIP
   ]
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerAZ1-${random_id.buildSuffix.hex}"
   }
 }
@@ -1235,6 +1177,7 @@ resource "aws_instance" "ServerAZ1" {
 resource "aws_network_interface" "ServerAZ2ENI" {
   subnet_id = aws_subnet.ServerSubnetAZ2.id
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "ServerAZ2ENI"
   }
 }
@@ -1248,6 +1191,7 @@ resource "aws_eip" "ServerAZ2EIP" {
     aws_internet_gateway.ServerIGW
   ]
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "ServerAZ2EIP"
   }
 }
@@ -1281,6 +1225,7 @@ resource "aws_instance" "ServerAZ2" {
     aws_eip.ServerAZ2EIP
   ]
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerAZ2-${random_id.buildSuffix.hex}"
   }
 }
@@ -1295,6 +1240,7 @@ resource "aws_ec2_transit_gateway" "awsTransitGateway" {
   default_route_table_association = "enable"
   default_route_table_propagation = "enable"
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-tgw-${random_id.buildSuffix.hex}"
   }
 }
@@ -1308,6 +1254,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "clientTGWVPCAttachment" {
   transit_gateway_default_route_table_propagation = "true"
   ipv6_support = "enable"
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-client-tgwvpcattach-${random_id.buildSuffix.hex}"
   }
 }
@@ -1320,6 +1267,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "serverTGWVPCAttachment" {
   transit_gateway_default_route_table_propagation = "true"
   ipv6_support = "enable"
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-server-tgwvpcattach-${random_id.buildSuffix.hex}"
   }
 }
@@ -1332,6 +1280,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "securityTGWVPCAttachment" {
   transit_gateway_default_route_table_propagation = "true"
   ipv6_support = "enable"
   tags = {
+    Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-security-tgwvpcattach-${random_id.buildSuffix.hex}"
   }  
 }

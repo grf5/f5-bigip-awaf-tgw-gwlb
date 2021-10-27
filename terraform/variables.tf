@@ -36,22 +36,12 @@ variable "labDomain" {
   type = string
 
 }
-variable "bigipLicensePRI_AZ1" {
+variable "bigipLicenseAZ1" {
   description = "BIG-IP License for AZ1 instance"
   type = string
   default = "PAYG"
 }
-variable "bigipLicenseSEC_AZ1" {
-  description = "BIG-IP License for AZ1 instance"
-  type = string
-  default = "PAYG"
-}
-variable "bigipLicensePRI_AZ2" {
-  description = "BIG-IP License for AZ2 instance"
-  type = string
-  default = "PAYG"
-}
-variable "bigipLicenseSEC_AZ2" {
+variable "bigipLicenseAZ2" {
   description = "BIG-IP License for AZ2 instance"
   type = string
   default = "PAYG"
