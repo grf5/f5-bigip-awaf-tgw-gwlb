@@ -271,46 +271,6 @@ resource "aws_route_table_association" "SecuritySvcsMgmtRTAssociationAZ2" {
 
 resource "aws_default_route_table" "SecuritySvcsMainRT" {
   default_route_table_id = aws_vpc.SecuritySvcsVPC.default_route_table_id
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
-  }
-  route {
-    ipv6_cidr_block = "::/0"
-    gateway_id = aws_internet_gateway.SecuritySvcsIGW.id
-  }
-  route {
-    cidr_block = aws_subnet.ClientSubnetAZ1.cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
-  }
-  route {
-    ipv6_cidr_block = aws_subnet.ClientSubnetAZ1.ipv6_cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
-  }
-  route {
-    cidr_block = aws_subnet.ClientSubnetAZ2.cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
-  }
-  route {
-    ipv6_cidr_block = aws_subnet.ClientSubnetAZ2.ipv6_cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
-  }
-  route {
-    cidr_block = aws_subnet.ServerSubnetAZ1.cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
-  }
-  route {
-    ipv6_cidr_block = aws_subnet.ServerSubnetAZ1.ipv6_cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
-  }
-  route {
-    cidr_block = aws_subnet.ServerSubnetAZ2.cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
-  }
-  route {
-    ipv6_cidr_block = aws_subnet.ServerSubnetAZ2.ipv6_cidr_block
-    network_interface_id = aws_network_interface.F5_BIGIP_AZ1ENI_DATA.id
-  }
   tags = {
     Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-SecuritySvcsMainRT-${random_id.buildSuffix.hex}"
@@ -636,7 +596,7 @@ resource "aws_vpc_endpoint" "BIGIPGWLBServerEndpointAZ1" {
   service_name = aws_vpc_endpoint_service.BIGIP_GWLB_VPC_Endpoint_Service.service_name
   vpc_id = aws_vpc.ServerVPC.id
   vpc_endpoint_type = aws_vpc_endpoint_service.BIGIP_GWLB_VPC_Endpoint_Service.service_type
-  subnet_ids = [ aws_subnet.ServerSubnetAZ1.id ]
+  subnet_ids = [ aws_subnet.ServerSubnetEgressAZ1.id ]
   tags = {
     Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-BIGIPGWLBServerEndpoint-${random_id.buildSuffix.hex}"
@@ -647,7 +607,7 @@ resource "aws_vpc_endpoint" "BIGIPGWLBServerEndpointAZ2" {
   service_name = aws_vpc_endpoint_service.BIGIP_GWLB_VPC_Endpoint_Service.service_name
   vpc_id = aws_vpc.ServerVPC.id
   vpc_endpoint_type = aws_vpc_endpoint_service.BIGIP_GWLB_VPC_Endpoint_Service.service_type
-  subnet_ids = [ aws_subnet.ServerSubnetAZ2.id ]
+  subnet_ids = [ aws_subnet.ServerSubnetEgressAZ2.id ]
   tags = {
     Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-BIGIPGWLBServerEndpoint-${random_id.buildSuffix.hex}"
@@ -1071,11 +1031,7 @@ resource "aws_default_route_table" "ServerMainRT" {
 resource "aws_route_table" "ServerIngressGWLBeAZ1" {
   vpc_id = aws_vpc.ServerVPC.id
   route {
-    cidr_block = "0.0.0.0/0"
-    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ1.id
-  }
-  route {
-    ipv6_cidr_block = "::/0"
+    cidr_block = aws_subnet.ServerSubnetAZ1.cidr_block
     vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ1.id
   }
   tags = {
@@ -1091,14 +1047,6 @@ resource "aws_route_table_association" "ServerIngressGWLBeAZ1" {
 
 resource "aws_route_table" "ServerIngressGWLBeAZ2" {
   vpc_id = aws_vpc.ServerVPC.id
-  route {
-    cidr_block = "0.0.0.0/0"
-    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ2.id
-  }
-  route {
-    ipv6_cidr_block = "::/0"
-    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ2.id
-  }
   tags = {
     Owner = "${var.resourceOwner}"
     Name = "${var.projectPrefix}-ServerIngressGWLBeAZ2-${random_id.buildSuffix.hex}"
@@ -1106,8 +1054,50 @@ resource "aws_route_table" "ServerIngressGWLBeAZ2" {
 }
 
 resource "aws_route_table_association" "ServerIngressGWLBeAZ2" {
-  subnet_id = aws_subnet.ServerSubnetIngressAZ1.id
-  route_table_id = aws_route_table.ServerIngressGWLBeAZ1.id
+  subnet_id = aws_subnet.ServerSubnetIngressAZ2.id
+  route_table_id = aws_route_table.ServerIngressGWLBeAZ2.id
+}
+
+resource "aws_route_table" "ServerEgressGWLBeAZ1" {
+  vpc_id = aws_vpc.ServerVPC.id
+  route {
+    cidr_block = aws_vpc.ClientVPC.cidr_block
+    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ1.id
+  }
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.ServerIGW.id
+  }
+  tags = {
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-ServerEgressGWLBeAZ1-${random_id.buildSuffix.hex}"
+  }  
+}
+
+resource "aws_route_table_association" "ServerEgressGWLBeAZ1" {
+  subnet_id = aws_subnet.ServerSubnetAZ1.id
+  route_table_id = aws_route_table.ServerEgressGWLBeAZ1.id
+}
+
+resource "aws_route_table" "ServerEgressGWLBeAZ2" {
+  vpc_id = aws_vpc.ServerVPC.id
+  route {
+    cidr_block = aws_vpc.ClientVPC.cidr_block
+    vpc_endpoint_id = aws_vpc_endpoint.BIGIPGWLBServerEndpointAZ2.id
+  }
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.ServerIGW.id
+  }
+  tags = {
+    Owner = "${var.resourceOwner}"
+    Name = "${var.projectPrefix}-ServerEgressGWLBeAZ2-${random_id.buildSuffix.hex}"
+  }  
+}
+
+resource "aws_route_table_association" "ServerEgressGWLBeAZ2" {
+  subnet_id = aws_subnet.ServerSubnetAZ2.id
+  route_table_id = aws_route_table.ServerEgressGWLBeAZ1.id
 }
 
 ##
